@@ -58,7 +58,6 @@
                             <img src="Frame 8.png" alt="Featured App 3">
                             <div class="item-reflection"></div>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -66,12 +65,50 @@
             <div class="content-container">
                 <div class="app-grid">
 
+                    <div class="app-card">
+                        <div class="app-content">
+                            <div class="app-icon">
+                                🎵
+                            </div>
+                            <h2 class="app-name">Sound Universe</h2>
+                            <p class="app-description">ритм-игра</p>
+                        </div>
+                        <div class="button-container">
+                            <a href="SU (1).html" class="visit-button">Открыть</a>
+                        </div>
+                    </div>
+
+                    <div class="app-card">
+                        <div class="app-content">
+                            <div class="app-icon">
+                                💻
+                            </div>
+                            <h2 class="app-name">Projects, Please</h2>
+                            <p class="app-description">симулятор модера</p>
+                        </div>
+                        <div class="button-container">
+                            <a href="PP (3).html" class="visit-button">Открыть</a>
+                        </div>
+                    </div>
+
+                    <div class="app-card">
+                        <div class="app-content">
+                            <div class="app-icon">
+                                🧎‍♀️‍➡️
+                            </div>
+                            <h2 class="app-name">Mountains</h2>
+                            <p class="app-description">аналог Soul Knight</p>
+                        </div>
+                        <div class="button-container">
+                            <a href="Mountains (1).html" class="visit-button">Открыть</a>
+                        </div>
+                    </div>
 
                     <div class="app-card">
                         <div class="app-content">
                             <div class="app-icon">
                                 🐟
-                                </div>
+                            </div>
                             <h2 class="app-name">Fish</h2>
                             <p class="app-description">Аналог Banana</p>
                         </div>
@@ -84,7 +121,7 @@
                         <div class="app-content">
                             <div class="app-icon">
                                 🐶
-                                </div>
+                            </div>
                             <h2 class="app-name">Phantom Dog</h2>
                             <p class="app-description">Игра с ивента ТОА</p>
                         </div>
@@ -97,7 +134,7 @@
                         <div class="app-content">
                             <div class="app-icon">
                                 🚀
-                                </div>
+                            </div>
                             <h2 class="app-name">Rocket Boost</h2>
                             <p class="app-description">Игра с ивента ТОА</p>
                         </div>
@@ -110,7 +147,7 @@
                         <div class="app-content">
                             <div class="app-icon">
                                 👾
-                                </div>
+                            </div>
                             <h2 class="app-name">Space Invaders</h2>
                             <p class="app-description">Игра с ивента ТОА</p>
                         </div>
@@ -123,7 +160,7 @@
                         <div class="app-content">
                             <div class="app-icon">
                                 <p>🚘</p>
-                                </div>
+                            </div>
                             <h2 class="app-name">Speed Track</h2>
                             <p class="app-description">Игра с ивента ТОА</p>
                         </div>
@@ -136,7 +173,7 @@
                         <div class="app-content">
                             <div class="app-icon">
                                 <p>🍴</p>
-                                </div>
+                            </div>
                             <h2 class="app-name">Spooky KILLchen</h2>
                             <p class="app-description">Игра с ивента ТОА</p>
                         </div>
@@ -144,7 +181,7 @@
                             <a href="https://game.toatoa.ru/spooky-killchen.html" class="visit-button">Открыть</a>
                         </div>
                     </div>
-
+                    
                 </div>
             </div>
         </div>
@@ -153,11 +190,70 @@
     <div class="settings-content">
         <div class="settings-container">
             <div class="ios-settings">
-                <div class="settings-group settings-message">
-                    Очень скоро тут появятся настройки!
-                    <div class="version">v1 hotfix 1</div>
+                <!-- Блок для авторизованного пользователя -->
+                <div class="settings-group user-profile" style="display: none;">
+                    <div class="profile-info">
+                        <div class="profile-avatar">👤</div>
+                        <div class="profile-name">
+                            <div class="display-name">Не указано</div>
+                            <div class="username">@не_указано</div>
+                        </div>
+                    </div>
+                    <button class="logout-button">Выйти</button>
                 </div>
-    
+
+                <!-- Блок для неавторизованного пользователя -->
+                <div class="settings-group auth-buttons">
+                    <button class="auth-button login-show">Войти</button>
+                    <button class="auth-button register-show">Регистрация</button>
+                </div>
+
+                <!-- Формы входа и регистрации -->
+                <div class="settings-group auth-forms">
+                    <div class="login-form" style="display: none;">
+                        <h2 class="form-title">Войти</h2>
+                        <div class="form-group">
+                            <input type="text" placeholder="Логин" class="auth-input login-username">
+                        </div>
+                        <div class="form-group">
+                            <input type="password" placeholder="Пароль" class="auth-input login-password">
+                        </div>
+                        <div class="form-actions">
+                            <button class="form-submit login-submit">Войти</button>
+                            <button class="form-back">Вернуться</button>
+                        </div>
+                    </div>
+                
+                    <div class="register-form" style="display: none;">
+                        <h2 class="form-title">Регистрация</h2>
+                        <div class="form-fields">
+                            <div class="form-group">
+                                <input type="text" placeholder="Логин" class="auth-input register-username">
+                            </div>
+                            <div class="form-group">
+                                <input type="text" placeholder="Отображаемое имя" class="auth-input register-displayname">
+                            </div>
+                            <div class="form-group">
+                                <input type="password" placeholder="Пароль" class="auth-input register-password">
+                            </div>
+                            <div class="form-group">
+                                <input type="password" placeholder="Повторите пароль" class="auth-input register-password-confirm">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button class="form-submit register-submit">Зарегистрироваться</button>
+                            <button class="form-back">Вернуться</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group settings-message-group">
+                    <div class="settings-message">
+                        Очень скоро тут появятся настройки!
+                        <div class="version">website v1.0</div>
+                    </div>
+                </div>
+
                 <div class="settings-group">
                     <a href="mailto:request@toatoa.ru" class="settings-button">Добавить Игру</a>
                 </div>
@@ -168,7 +264,7 @@
     <div class="website-content">
         <iframe src="about:blank" frameborder="0"></iframe>
     </div>
-
+    <div class="notification-container"></div>
     <script src="script.js"></script>
 </body>
 </html>

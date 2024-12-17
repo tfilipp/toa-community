@@ -1,4 +1,34 @@
 document.addEventListener('DOMContentLoaded', () => {
+    class NotificationSystem {
+        constructor() {
+            this.container = document.querySelector('.notification-container');
+        }
+
+        show(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+
+            this.container.appendChild(notification);
+
+            // Активируем уведомление в следующем кадре для анимации
+            requestAnimationFrame(() => {
+                notification.classList.add('active');
+            });
+
+            // Удаляем уведомление через 3 секунды
+            setTimeout(() => {
+                notification.classList.remove('active');
+                notification.addEventListener('transitionend', () => {
+                    notification.remove();
+                });
+            }, 3000);
+        }
+    }
+
+    // Создаем глобальный экземпляр системы уведомлений
+    const notifications = new NotificationSystem();
+
     class Coverflow {
         constructor() {
             this.container = document.querySelector('.coverflow-items');
@@ -10,6 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
             this.angle = window.innerWidth <= 768 ? 25 : 32;
             this.autoplayInterval = null;
             
+            this.refreshImages();
+            
             window.addEventListener('resize', () => {
                 this.spacing = window.innerWidth <= 768 ? 250 : 450;
                 this.zDistance = window.innerWidth <= 768 ? 400 : 600;
@@ -19,11 +51,20 @@ document.addEventListener('DOMContentLoaded', () => {
             
             this.init();
         }
-    
+
+        refreshImages() {
+            const timestamp = new Date().getTime();
+            this.items.forEach(item => {
+                const img = item.querySelector('img');
+                const originalSrc = img.src.split('?')[0];
+                img.src = `${originalSrc}?t=${timestamp}`;
+            });
+        }
+
         init() {
             this.updateItems();
             this.startAutoplay();
-    
+
             let startX;
             this.container.addEventListener('touchstart', (e) => {
                 this.stopAutoplay();
@@ -39,10 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 this.startAutoplay();
             });
-    
+
             this.container.addEventListener('mouseenter', () => this.stopAutoplay());
             this.container.addEventListener('mouseleave', () => this.startAutoplay());
-    
+
             this.items.forEach((item, index) => {
                 item.addEventListener('click', () => {
                     if(index !== this.currentIndex) {
@@ -52,8 +93,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             });
+
+            setInterval(() => this.refreshImages(), 300000);
         }
-    
+
         updateItems() {
             requestAnimationFrame(() => {
                 this.items.forEach((item, index) => {
@@ -67,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     let rotateY = 0;
                     let opacity = 1;
                     let scale = 1;
-    
+
                     if (diff !== 0) {
                         translateZ = -this.zDistance;
                         rotateY = diff < 0 ? this.angle : -this.angle;
@@ -77,11 +120,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         scale = 1;
                         translateZ = 50;
                     }
-    
+
                     if (Math.abs(diff) > 2) {
                         opacity = 0;
                     }
-    
+
                     item.style.transform = `
                         translate3d(${translateX}px, 0, ${translateZ}px)
                         rotateY(${rotateY}deg)
@@ -89,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     `;
                     item.style.opacity = opacity;
                     item.style.zIndex = 100 - Math.abs(diff * 10);
-    
+
                     const reflection = item.querySelector('.item-reflection');
                     if (reflection) {
                         reflection.style.opacity = opacity * 0.4;
@@ -102,36 +145,209 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         }
-    
+
         startAutoplay() {
             if (!this.autoplayInterval) {
                 this.autoplayInterval = setInterval(() => this.next(), 3000);
             }
         }
-    
+
         stopAutoplay() {
             if (this.autoplayInterval) {
                 clearInterval(this.autoplayInterval);
                 this.autoplayInterval = null;
             }
         }
-    
+
         prev() {
             this.currentIndex = (this.currentIndex - 1 + this.total) % this.total;
             this.updateItems();
         }
-    
+
         next() {
             this.currentIndex = (this.currentIndex + 1) % this.total;
             this.updateItems();
         }
-    
+
         goTo(index) {
             this.currentIndex = index % this.total;
             this.updateItems();
         }
     }
-    // Инициализация элементов
+
+    class AuthSystem {
+        constructor() {
+            this.isAuthenticated = false;
+            this.currentUser = null;
+            this.initElements();
+            this.initEvents();
+            this.checkAuth();
+        }
+
+        initElements() {
+            this.userProfile = document.querySelector('.user-profile');
+            this.authButtons = document.querySelector('.auth-buttons');
+            this.authForms = document.querySelector('.auth-forms');
+            this.loginForm = document.querySelector('.login-form');
+            this.registerForm = document.querySelector('.register-form');
+            this.loginShowBtn = document.querySelector('.login-show');
+            this.registerShowBtn = document.querySelector('.register-show');
+            this.backButtons = document.querySelectorAll('.form-back');
+            this.logoutButton = document.querySelector('.logout-button');
+            this.displayNameElement = document.querySelector('.display-name');
+            this.usernameElement = document.querySelector('.username');
+
+            // Form inputs
+            this.loginUsername = document.querySelector('.login-username');
+            this.loginPassword = document.querySelector('.login-password');
+            this.registerUsername = document.querySelector('.register-username');
+            this.registerDisplayname = document.querySelector('.register-displayname');
+            this.registerPassword = document.querySelector('.register-password');
+            this.registerPasswordConfirm = document.querySelector('.register-password-confirm');
+        }
+
+        initEvents() {
+            this.loginShowBtn.addEventListener('click', () => this.showLoginForm());
+            this.registerShowBtn.addEventListener('click', () => this.showRegisterForm());
+            
+            this.backButtons.forEach(btn => {
+                btn.addEventListener('click', () => this.showAuthButtons());
+            });
+
+            this.logoutButton.addEventListener('click', () => this.logout());
+
+            document.querySelector('.login-submit').addEventListener('click', () => this.login());
+            document.querySelector('.register-submit').addEventListener('click', () => this.register());
+        }
+
+        showLoginForm() {
+            this.authButtons.style.display = 'none';
+            this.loginForm.style.display = 'block';
+            this.registerForm.style.display = 'none';
+        }
+
+        showRegisterForm() {
+            this.authButtons.style.display = 'none';
+            this.loginForm.style.display = 'none';
+            this.registerForm.style.display = 'block';
+        }
+
+        showAuthButtons() {
+            this.authButtons.style.display = 'block';
+            this.loginForm.style.display = 'none';
+            this.registerForm.style.display = 'none';
+        }
+
+        checkAuth() {
+            const userData = localStorage.getItem('user');
+            if (userData) {
+                this.currentUser = JSON.parse(userData);
+                this.isAuthenticated = true;
+                this.updateUI();
+            }
+        }
+
+        updateUI() {
+            if (this.isAuthenticated) {
+                this.userProfile.style.display = 'block';
+                this.authButtons.style.display = 'none';
+                this.authForms.style.display = 'none';
+                this.displayNameElement.textContent = this.currentUser.displayName;
+                this.usernameElement.textContent = '@' + this.currentUser.username;
+            } else {
+                this.userProfile.style.display = 'none';
+                this.authButtons.style.display = 'block';
+                this.authForms.style.display = 'block';
+            }
+        }
+
+        login() {
+            const username = this.loginUsername.value;
+            const password = this.loginPassword.value;
+
+            if (!username || !password) {
+                notifications.show('Пожалуйста, заполните все поля');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                this.currentUser = {
+                    username: user.username,
+                    displayName: user.displayName
+                };
+                this.isAuthenticated = true;
+                localStorage.setItem('user', JSON.stringify(this.currentUser));
+                this.updateUI();
+                this.loginUsername.value = '';
+                this.loginPassword.value = '';
+                notifications.show('Вы успешно вошли в систему');
+            } else {
+                notifications.show('Неверный логин или пароль');
+            }
+        }
+
+        register() {
+            const username = this.registerUsername.value;
+            const displayName = this.registerDisplayname.value;
+            const password = this.registerPassword.value;
+            const passwordConfirm = this.registerPasswordConfirm.value;
+
+            if (!username || !displayName || !password || !passwordConfirm) {
+                notifications.show('Пожалуйста, заполните все поля');
+                return;
+            }
+
+            if (password !== passwordConfirm) {
+                notifications.show('Пароли не совпадают');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            
+            if (users.some(u => u.username === username)) {
+                notifications.show('Пользователь с таким именем уже существует');
+                return;
+            }
+
+            const newUser = {
+                username,
+                displayName,
+                password
+            };
+
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+
+            this.currentUser = {
+                username,
+                displayName
+            };
+            this.isAuthenticated = true;
+            localStorage.setItem('user', JSON.stringify(this.currentUser));
+            this.updateUI();
+
+            this.registerUsername.value = '';
+            this.registerDisplayname.value = '';
+            this.registerPassword.value = '';
+            this.registerPasswordConfirm.value = '';
+
+            notifications.show('Регистрация успешно завершена');
+        }
+
+        logout() {
+            localStorage.removeItem('user');
+            this.currentUser = null;
+            this.isAuthenticated = false;
+            this.updateUI();
+            this.showAuthButtons();
+            notifications.show('Вы вышли из системы');
+        }
+    }
+
+    // Основная инициализация
     const pageCorner = document.querySelector('.page-corner');
     const pageWrapper = document.querySelector('.page-wrapper');
     const settingsContent = document.querySelector('.settings-content');
@@ -143,8 +359,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let isOpen = false;
     let isWebsiteMode = false;
 
-    // Инициализация карусели
+    // Инициализация карусели и системы авторизации
     const coverflow = new Coverflow();
+    const auth = new AuthSystem();
 
     // Обработка клика по кнопкам перехода на сайт
     document.querySelectorAll('.visit-button').forEach(button => {
@@ -153,10 +370,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const url = button.getAttribute('href');
             const iframe = websiteContent.querySelector('iframe');
             
-            // Сначала показываем iframe
             websiteContent.style.visibility = 'visible';
             websiteContent.style.opacity = '1';
-            // Затем загружаем URL
             iframe.src = url;
             
             requestAnimationFrame(() => {
@@ -177,7 +392,6 @@ document.addEventListener('DOMContentLoaded', () => {
             pageWrapper.addEventListener('transitionend', function hideWebsite() {
                 websiteContent.style.visibility = 'hidden';
                 websiteContent.style.opacity = '0';
-                // Очищаем iframe после завершения анимации
                 const iframe = websiteContent.querySelector('iframe');
                 iframe.src = 'about:blank';
                 pageWrapper.removeEventListener('transitionend', hideWebsite);
@@ -196,7 +410,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             isOpen = false;
         } else {
-            // Открываем настройки без скрытия контента
             settingsContent.style.visibility = 'visible';
             settingsContent.style.opacity = '1';
             
