@@ -251,10 +251,20 @@ body {
     height: 120px;
     border-radius: 25px;
     margin: 0 auto 20px;
+    background: linear-gradient(to bottom, 
+    #5ac2d4 0%,
+    #4c84d9 50%,
+    #436dc1 50%,
+    #4686c6 100%
+);
     display: block;
+    background-color: line;
     box-shadow: 
         0 4px 8px rgba(0,0,0,0.1),
         inset 0 1px 1px rgba(255,255,255,0.9);
+    font-size: 64px;
+    line-height: 120px;
+    text-align: center;
 }
 
 .app-name {
