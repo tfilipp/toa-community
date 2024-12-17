@@ -5,18 +5,25 @@ document.addEventListener('DOMContentLoaded', () => {
             this.items = document.querySelectorAll('.coverflow-item');
             this.currentIndex = 0;
             this.total = this.items.length;
-            this.spacing = 450;
-            this.zDistance = 600;
-            this.angle = 32;
+            this.spacing = window.innerWidth <= 768 ? 250 : 450;
+            this.zDistance = window.innerWidth <= 768 ? 400 : 600;
+            this.angle = window.innerWidth <= 768 ? 25 : 32;
             this.autoplayInterval = null;
+            
+            window.addEventListener('resize', () => {
+                this.spacing = window.innerWidth <= 768 ? 250 : 450;
+                this.zDistance = window.innerWidth <= 768 ? 400 : 600;
+                this.angle = window.innerWidth <= 768 ? 25 : 32;
+                this.updateItems();
+            });
             
             this.init();
         }
-
+    
         init() {
             this.updateItems();
             this.startAutoplay();
-
+    
             let startX;
             this.container.addEventListener('touchstart', (e) => {
                 this.stopAutoplay();
@@ -32,10 +39,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 this.startAutoplay();
             });
-
+    
             this.container.addEventListener('mouseenter', () => this.stopAutoplay());
             this.container.addEventListener('mouseleave', () => this.startAutoplay());
-
+    
             this.items.forEach((item, index) => {
                 item.addEventListener('click', () => {
                     if(index !== this.currentIndex) {
@@ -46,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         }
-
+    
         updateItems() {
             requestAnimationFrame(() => {
                 this.items.forEach((item, index) => {
@@ -60,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     let rotateY = 0;
                     let opacity = 1;
                     let scale = 1;
-
+    
                     if (diff !== 0) {
                         translateZ = -this.zDistance;
                         rotateY = diff < 0 ? this.angle : -this.angle;
@@ -70,11 +77,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         scale = 1;
                         translateZ = 50;
                     }
-
+    
                     if (Math.abs(diff) > 2) {
                         opacity = 0;
                     }
-
+    
                     item.style.transform = `
                         translate3d(${translateX}px, 0, ${translateZ}px)
                         rotateY(${rotateY}deg)
@@ -82,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     `;
                     item.style.opacity = opacity;
                     item.style.zIndex = 100 - Math.abs(diff * 10);
-
+    
                     const reflection = item.querySelector('.item-reflection');
                     if (reflection) {
                         reflection.style.opacity = opacity * 0.4;
@@ -95,66 +102,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         }
-
+    
         startAutoplay() {
             if (!this.autoplayInterval) {
                 this.autoplayInterval = setInterval(() => this.next(), 3000);
             }
         }
-
+    
         stopAutoplay() {
             if (this.autoplayInterval) {
                 clearInterval(this.autoplayInterval);
                 this.autoplayInterval = null;
             }
         }
-
+    
         prev() {
             this.currentIndex = (this.currentIndex - 1 + this.total) % this.total;
             this.updateItems();
         }
-
+    
         next() {
             this.currentIndex = (this.currentIndex + 1) % this.total;
             this.updateItems();
         }
-
+    
         goTo(index) {
             this.currentIndex = index % this.total;
             this.updateItems();
         }
     }
-
-    class ToggleSwitch {
-        constructor(elementId, onToggle) {
-            this.element = document.getElementById(elementId);
-            this.state = localStorage.getItem(elementId) === 'true';
-            this.onToggle = onToggle;
-            
-            if (this.element) {
-                this.init();
-            }
-        }
-
-        init() {
-            if (this.state) {
-                this.element.classList.add('active');
-                this.onToggle?.(true);
-            }
-
-            this.element.addEventListener('click', () => {
-                this.toggle();
-            });
-        }
-
-        toggle() {
-            this.state = !this.state;
-            this.element.classList.toggle('active');
-            localStorage.setItem(this.element.id, this.state);
-            this.onToggle?.(this.state);
-        }
-    }
-
     // Инициализация элементов
     const pageCorner = document.querySelector('.page-corner');
     const pageWrapper = document.querySelector('.page-wrapper');
@@ -176,21 +152,18 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const url = button.getAttribute('href');
             const iframe = websiteContent.querySelector('iframe');
+            
+            // Сначала показываем iframe
+            websiteContent.style.visibility = 'visible';
+            websiteContent.style.opacity = '1';
+            // Затем загружаем URL
             iframe.src = url;
-
-            scrollableContent.style.visibility = 'hidden';
-            scrollableContent.style.opacity = '0';
             
             requestAnimationFrame(() => {
-                websiteContent.style.visibility = 'visible';
-                websiteContent.style.opacity = '1';
-                
-                requestAnimationFrame(() => {
-                    document.documentElement.style.setProperty('--page-lift', '90deg');
-                    pageWrapper.classList.add('lifted');
-                    isWebsiteMode = true;
-                    cornerTooltip.textContent = 'В Community';
-                });
+                document.documentElement.style.setProperty('--page-lift', '90deg');
+                pageWrapper.classList.add('lifted');
+                isWebsiteMode = true;
+                cornerTooltip.textContent = 'В Community';
             });
         });
     });
@@ -204,8 +177,9 @@ document.addEventListener('DOMContentLoaded', () => {
             pageWrapper.addEventListener('transitionend', function hideWebsite() {
                 websiteContent.style.visibility = 'hidden';
                 websiteContent.style.opacity = '0';
-                scrollableContent.style.visibility = 'visible';
-                scrollableContent.style.opacity = '1';
+                // Очищаем iframe после завершения анимации
+                const iframe = websiteContent.querySelector('iframe');
+                iframe.src = 'about:blank';
                 pageWrapper.removeEventListener('transitionend', hideWebsite);
                 isWebsiteMode = false;
                 cornerTooltip.textContent = 'Настройки';
@@ -214,37 +188,23 @@ document.addEventListener('DOMContentLoaded', () => {
             document.documentElement.style.setProperty('--page-lift', '0deg');
             pageWrapper.classList.remove('lifted');
             
-            pageWrapper.addEventListener('transitionend', function showContent() {
+            pageWrapper.addEventListener('transitionend', function hideSettings() {
                 settingsContent.style.visibility = 'hidden';
                 settingsContent.style.opacity = '0';
-                scrollableContent.style.visibility = 'visible';
-                scrollableContent.style.opacity = '1';
-                pageWrapper.removeEventListener('transitionend', showContent);
+                pageWrapper.removeEventListener('transitionend', hideSettings);
             }, { once: true });
+            
             isOpen = false;
         } else {
-            scrollableContent.style.visibility = 'hidden';
-            scrollableContent.style.opacity = '0';
+            // Открываем настройки без скрытия контента
+            settingsContent.style.visibility = 'visible';
+            settingsContent.style.opacity = '1';
             
             requestAnimationFrame(() => {
-                settingsContent.style.visibility = 'visible';
-                settingsContent.style.opacity = '1';
-                
-                requestAnimationFrame(() => {
-                    document.documentElement.style.setProperty('--page-lift', '90deg');
-                    pageWrapper.classList.add('lifted');
-                });
+                document.documentElement.style.setProperty('--page-lift', '90deg');
+                pageWrapper.classList.add('lifted');
             });
             isOpen = true;
-        }
-    });
-
-    // Инициализация переключателей
-    new ToggleSwitch('darkMode', (isDark) => {
-        if (isDark) {
-            document.body.classList.add('dark-mode');
-        } else {
-            document.body.classList.remove('dark-mode');
         }
     });
 
@@ -271,25 +231,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if(isOpen && 
            !pageCorner.contains(e.target) && 
            !settingsContent.contains(e.target)) {
-            scrollableContent.style.visibility = 'hidden';
-            scrollableContent.style.opacity = '0';
-            
             document.documentElement.style.setProperty('--page-lift', '0deg');
             pageWrapper.classList.remove('lifted');
             
-            pageWrapper.addEventListener('transitionend', function showContent() {
+            pageWrapper.addEventListener('transitionend', function hideSettings() {
                 settingsContent.style.visibility = 'hidden';
                 settingsContent.style.opacity = '0';
-                scrollableContent.style.visibility = 'visible';
-                scrollableContent.style.opacity = '1';
-                pageWrapper.removeEventListener('transitionend', showContent);
+                pageWrapper.removeEventListener('transitionend', hideSettings);
             }, { once: true });
             
             isOpen = false;
         }
     });
 
-    // Предотвращение всплытия кликов в настройках
+    // Предотвращение всплытия кликов
     settingsContent.addEventListener('click', (e) => {
         e.stopPropagation();
     });
@@ -304,25 +259,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 pageWrapper.addEventListener('transitionend', function hideWebsite() {
                     websiteContent.style.visibility = 'hidden';
                     websiteContent.style.opacity = '0';
-                    scrollableContent.style.visibility = 'visible';
-                    scrollableContent.style.opacity = '1';
+                    const iframe = websiteContent.querySelector('iframe');
+                    iframe.src = 'about:blank';
                     pageWrapper.removeEventListener('transitionend', hideWebsite);
                     isWebsiteMode = false;
                     cornerTooltip.textContent = 'Настройки';
                 }, { once: true });
-            } else {
-                scrollableContent.style.visibility = 'hidden';
-                scrollableContent.style.opacity = '0';
-                
+            } else if(isOpen) {
                 document.documentElement.style.setProperty('--page-lift', '0deg');
                 pageWrapper.classList.remove('lifted');
                 
-                pageWrapper.addEventListener('transitionend', function showContent() {
+                pageWrapper.addEventListener('transitionend', function hideSettings() {
                     settingsContent.style.visibility = 'hidden';
                     settingsContent.style.opacity = '0';
-                    scrollableContent.style.visibility = 'visible';
-                    scrollableContent.style.opacity = '1';
-                    pageWrapper.removeEventListener('transitionend', showContent);
+                    pageWrapper.removeEventListener('transitionend', hideSettings);
                 }, { once: true });
                 
                 isOpen = false;
