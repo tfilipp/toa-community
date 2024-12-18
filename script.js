@@ -11,12 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             this.container.appendChild(notification);
 
-            // Активируем уведомление в следующем кадре для анимации
             requestAnimationFrame(() => {
                 notification.classList.add('active');
             });
 
-            // Удаляем уведомление через 3 секунды
             setTimeout(() => {
                 notification.classList.remove('active');
                 notification.addEventListener('transitionend', () => {
@@ -25,9 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 3000);
         }
     }
-
-    // Создаем глобальный экземпляр системы уведомлений
-    const notifications = new NotificationSystem();
 
     class Coverflow {
         constructor() {
@@ -347,7 +342,105 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    class UploadSystem {
+        constructor(auth) {
+            this.auth = auth;
+            this.initElements();
+            this.initEvents();
+        }
+
+        initElements() {
+            this.addGameBtn = document.querySelector('.add-game');
+            this.uploadMenu = document.querySelector('.upload-menu');
+            this.uploadProcess = document.querySelector('.upload-process');
+            this.manualUploadBtn = document.querySelector('.manual-upload');
+            this.jsonDownloadedBtn = document.querySelector('.json-downloaded');
+            this.stepJson = document.querySelector('.step-json');
+            this.stepPackager = document.querySelector('.step-packager');
+            this.stepDetails = document.querySelector('.step-details');
+            this.htmlUpload = document.querySelector('.html-upload');
+            this.uploadHtmlBtn = document.querySelector('.upload-html');
+            this.submitGameBtn = document.querySelector('.submit-game');
+        }
+
+        initEvents() {
+            this.addGameBtn.addEventListener('click', () => this.showUploadMenu());
+            this.manualUploadBtn.addEventListener('click', () => this.startManualUpload());
+            this.jsonDownloadedBtn.addEventListener('click', () => this.showPackagerStep());
+            this.uploadHtmlBtn.addEventListener('click', () => this.htmlUpload.click());
+            this.htmlUpload.addEventListener('change', (e) => this.handleHtmlUpload(e));
+            this.submitGameBtn.addEventListener('click', () => this.submitGame());
+
+            // Активируем кнопку через 3 секунды
+            setTimeout(() => {
+                this.jsonDownloadedBtn.disabled = false;
+            }, 3000);
+        }
+
+        showUploadMenu() {
+            this.addGameBtn.style.display = 'none';
+            this.uploadMenu.style.display = 'block';
+        }
+
+        startManualUpload() {
+            if (!this.auth.isAuthenticated) {
+                notifications.show('Требуется авторизация для загрузки игр');
+                return;
+            }
+
+            this.uploadMenu.style.display = 'none';
+            this.uploadProcess.style.display = 'block';
+        }
+
+        showPackagerStep() {
+            this.stepJson.style.display = 'none';
+            this.stepPackager.style.display = 'block';
+        }
+
+        handleHtmlUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                this.stepPackager.style.display = 'none';
+                this.stepDetails.style.display = 'block';
+            }
+        }
+
+        submitGame() {
+            const emoji = document.querySelector('.emoji-input').value;
+            const name = document.querySelector('.name-input').value;
+            const desc = document.querySelector('.desc-input').value;
+
+            if (!emoji || !name || !desc) {
+                notifications.show('Заполните все поля');
+                return;
+            }
+
+            const newCard = document.createElement('div');
+            newCard.className = 'app-card';
+            newCard.innerHTML = `
+                <div class="app-content">
+                    <div class="app-icon">
+                        ${emoji}
+                    </div>
+                    <h2 class="app-name">${name}</h2>
+                    <p class="app-description">${desc}</p>
+                </div>
+                <div class="button-container">
+                    <a href="#" class="visit-button">Открыть</a>
+                </div>
+            `;
+
+            const appGrid = document.querySelector('.app-grid');
+            appGrid.insertBefore(newCard, appGrid.firstChild);
+
+            this.uploadProcess.style.display = 'none';
+            this.addGameBtn.style.display = 'block';
+            notifications.show('Игра успешно добавлена!');
+        }
+    }
+
     // Основная инициализация
+    const notifications = new NotificationSystem();
     const pageCorner = document.querySelector('.page-corner');
     const pageWrapper = document.querySelector('.page-wrapper');
     const settingsContent = document.querySelector('.settings-content');
@@ -362,6 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Инициализация карусели и системы авторизации
     const coverflow = new Coverflow();
     const auth = new AuthSystem();
+    const upload = new UploadSystem(auth);
 
     // Обработка клика по кнопкам перехода на сайт
     document.querySelectorAll('.visit-button').forEach(button => {
